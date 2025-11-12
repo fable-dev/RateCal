@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RateCal — Formula Calculator</title>
-  <meta name="description" content="Calculate (((X*2)-((P% of X)*2))*2). Made for fable-dev / RateCal." />
+  <meta name="description" content="Calculate (((X*2)-((P% of X)*2))*2) with optional rate change. Made for fable-dev / RateCal." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,9 +14,21 @@
       <p class="lead">Formula: <strong>(((X × 2) − ((P% of X) × 2)) × 2)</strong></p>
 
       <div class="controls">
-        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter X value" aria-label="X value">
-        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter % (e.g. 30)" aria-label="Percentage value" value="30">
+        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter X value">
+        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter % (e.g. 30)" value="30">
+      </div>
+
+      <div class="controls">
+        <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Price change / variation">
+        <div style="display:flex;gap:6px;">
+          <button class="btn ghost" id="increaseBtn" data-mode="increase">Increase</button>
+          <button class="btn ghost" id="decreaseBtn" data-mode="decrease">Decrease</button>
+        </div>
+      </div>
+
+      <div class="controls">
         <button class="btn primary" id="calcBtn">Calculate</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
       </div>
 
       <div class="presets small">
@@ -32,7 +44,7 @@
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <button class="btn ghost" id="showStepsBtn">Show steps</button>
-          <button class="copy-link" id="copyLinkBtn" title="Copy site link">Copy link</button>
+          <button class="copy-link" id="copyLinkBtn">Copy link</button>
         </div>
       </div>
 
