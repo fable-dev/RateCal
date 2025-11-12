@@ -19,11 +19,12 @@
       </div>
 
       <div class="controls">
+        <select id="changeMode">
+          <option value="">No change</option>
+          <option value="increase">Increase</option>
+          <option value="decrease">Decrease</option>
+        </select>
         <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Price change / variation">
-        <div style="display:flex;gap:6px;">
-          <button class="btn ghost" id="increaseBtn" data-mode="increase">Increase</button>
-          <button class="btn ghost" id="decreaseBtn" data-mode="decrease">Decrease</button>
-        </div>
       </div>
 
       <div class="controls">
