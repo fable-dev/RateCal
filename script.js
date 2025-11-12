@@ -36,6 +36,23 @@ function formatNumber(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
 
+// --- Calculate recommended rate ---
+function calculateRecommendedRate(rate) {
+  // Round to nearest 10 where nett rate (rate/2) is divisible by 10
+  let recommendedRate = Math.round(rate / 10) * 10;
+  let nettRate = recommendedRate / 2;
+  
+  // If nett rate is not divisible by 10, adjust to next multiple of 20
+  if (nettRate % 10 !== 0) {
+    recommendedRate = Math.round(rate / 20) * 20;
+  }
+  
+  return {
+    rate: recommendedRate,
+    nett: recommendedRate / 2
+  };
+}
+
 // --- calculate ---
 function calculateAction() {
   const xVal = xInput.value.trim();
@@ -50,7 +67,16 @@ function calculateAction() {
     return;
   }
 
-  resultValue.textContent = 'Result: ' + formatNumber(r.final);
+  const recommended = calculateRecommendedRate(r.final);
+  
+  resultValue.innerHTML = `
+    <strong>Rate: ${formatNumber(r.final)}</strong><br>
+    <div style="font-size: 14px; margin-top: 4px;">
+      Nett Rate: ${formatNumber(r.final / 2)}<br>
+      <strong>Recommended Rate: ${recommended.rate}</strong><br>
+      <strong>Recommended Nett Rate: ${recommended.nett}</strong>
+    </div>
+  `;
 
   let note = `Base X = ${xVal}`;
   if (r.change !== 0 && r.mode)
