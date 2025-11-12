@@ -1,6 +1,6 @@
 const xInput = document.getElementById('xValue');
+const pInput = document.getElementById('pValue');
 const calcBtn = document.getElementById('calcBtn');
-const clearBtn = document.getElementById('clearBtn');
 const resultBox = document.getElementById('resultBox');
 const resultValue = document.getElementById('resultValue');
 const resultNote = document.getElementById('resultNote');
@@ -8,13 +8,14 @@ const stepsEl = document.getElementById('steps');
 const showStepsBtn = document.getElementById('showStepsBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-function compute(x) {
+function compute(x, p) {
   const xNum = Number(x);
+  const pNum = Number(p);
   const part1 = xNum * 2;
-  const part2 = 0.3 * xNum * 2;
+  const part2 = (pNum / 100) * xNum * 2;  // percentage-based
   const diff = part1 - part2;
   const final = diff * 2;
-  return { x: xNum, part1, part2, diff, final };
+  return { x: xNum, p: pNum, part1, part2, diff, final };
 }
 
 function formatNumber(n) {
@@ -22,25 +23,30 @@ function formatNumber(n) {
 }
 
 calcBtn.addEventListener('click', () => {
-  const val = xInput.value.trim();
-  if (val === '') {
-    alert('Please enter a value for X.');
-    xInput.focus();
+  const xVal = xInput.value.trim();
+  const pVal = pInput.value.trim();
+
+  if (xVal === '' || pVal === '') {
+    alert('Please enter both X value and percentage.');
     return;
   }
-  const parsed = Number(val);
-  if (!isFinite(parsed)) {
-    alert('Please enter a valid number.');
-    xInput.focus();
+
+  const parsedX = Number(xVal);
+  const parsedP = Number(pVal);
+
+  if (!isFinite(parsedX) || !isFinite(parsedP)) {
+    alert('Please enter valid numbers.');
     return;
   }
-  const r = compute(parsed);
+
+  const r = compute(parsedX, parsedP);
+
   resultValue.textContent = 'Result: ' + formatNumber(r.final);
-  resultNote.textContent = `Computed from X = ${formatNumber(r.x)}`;
+  resultNote.textContent = `From X = ${formatNumber(r.x)}, P = ${formatNumber(r.p)}%`;
   stepsEl.innerHTML = `
     <strong>Steps:</strong><br>
     1) X × 2 = ${formatNumber(r.part1)}<br>
-    2) 0.3 × X × 2 = ${formatNumber(r.part2)}<br>
+    2) ${formatNumber(r.p)}% of X × 2 = ${formatNumber(r.part2)}<br>
     3) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
     4) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
   `;
@@ -49,16 +55,10 @@ calcBtn.addEventListener('click', () => {
   showStepsBtn.textContent = 'Show steps';
 });
 
-clearBtn.addEventListener('click', () => {
-  xInput.value = '';
-  resultBox.hidden = true;
-  stepsEl.hidden = true;
-  xInput.focus();
-});
-
-document.querySelectorAll('[data-preset]').forEach(btn => {
+document.querySelectorAll('[data-preset-x]').forEach(btn => {
   btn.addEventListener('click', () => {
-    xInput.value = btn.getAttribute('data-preset');
+    xInput.value = btn.getAttribute('data-preset-x');
+    pInput.value = btn.getAttribute('data-preset-p');
     calcBtn.click();
   });
 });
@@ -80,6 +80,8 @@ copyLinkBtn.addEventListener('click', async () => {
   }
 });
 
-xInput.addEventListener('keypress', e => {
-  if (e.key === 'Enter') calcBtn.click();
+[xInput, pInput].forEach(input => {
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') calcBtn.click();
+  });
 });
