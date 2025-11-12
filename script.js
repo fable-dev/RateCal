@@ -1,4 +1,3 @@
-
 // Element selectors
 const xInput = document.getElementById('xValue');
 const pInput = document.getElementById('pValue');
