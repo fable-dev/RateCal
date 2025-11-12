@@ -1,3 +1,4 @@
+
 // Element selectors
 const xInput = document.getElementById('xValue');
 const pInput = document.getElementById('pValue');
@@ -24,10 +25,10 @@ function compute(x, p, change, mode) {
   if (mode === 'increase') xNum += changeNum;
   else if (mode === 'decrease') xNum -= changeNum;
 
-  const part1 = xNum * 2;
-  const part2 = (pNum / 100) * xNum * 2;
-  const diff = part1 - part2;
-  const final = diff * 2;
+  const part1 = xNum * 2;  // X × 2
+  const part2 = (pNum / 100) * part1;  // P% of (X × 2)
+  const diff = part1 - part2;  // (X × 2) − (P% of (X × 2))
+  const final = diff * 2;  // [ (X × 2) − (P% of (X × 2)) ] × 2
 
   return { x: xNum, p: pNum, change: changeNum, mode, part1, part2, diff, final };
 }
@@ -60,11 +61,11 @@ function calculateAction() {
 
   stepsEl.innerHTML = `
     <strong>Steps:</strong><br>
-    1) Adjust X: ${xVal} ${r.mode ? (r.mode === 'increase' ? '+' : '−') + r.change : ''} = ${formatNumber(r.x)}<br>
-    2) X × 2 = ${formatNumber(r.part1)}<br>
-    3) ${formatNumber(r.p)}% of X × 2 = ${formatNumber(r.part2)}<br>
-    4) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
-    5) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
+    ${r.change !== 0 && r.mode ? `1) Adjust X: ${xVal} ${r.mode === 'increase' ? '+' : '−'} ${r.change} = ${formatNumber(r.x)}<br>` : ''}
+    ${r.change !== 0 && r.mode ? '2' : '1'}) X × 2 = ${formatNumber(r.x)} × 2 = ${formatNumber(r.part1)}<br>
+    ${r.change !== 0 && r.mode ? '3' : '2'}) ${formatNumber(r.p)}% of (X × 2) = ${formatNumber(r.p/100)} × ${formatNumber(r.part1)} = ${formatNumber(r.part2)}<br>
+    ${r.change !== 0 && r.mode ? '4' : '3'}) (X × 2) − (P% of X × 2) = ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
+    ${r.change !== 0 && r.mode ? '5' : '4'}) Difference × 2 = ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
   `;
 
   resultBox.hidden = false;
