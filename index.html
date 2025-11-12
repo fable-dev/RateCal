@@ -4,25 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RateCal — Formula Calculator</title>
-  <meta name="description" content="Calculate (((X*2)-(0.3*X*2))*2). Made for fable-dev / RateCal." />
+  <meta name="description" content="Calculate (((X*2)-((P% of X)*2))*2). Made for fable-dev / RateCal." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="wrap">
     <main class="card" role="main">
       <h1>RateCal — Formula Calculator</h1>
-      <p class="lead">Formula: <strong>(((X × 2) − (0.3 × X × 2)) × 2)</strong></p>
+      <p class="lead">Formula: <strong>(((X × 2) − ((P% of X) × 2)) × 2)</strong></p>
 
       <div class="controls">
-        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter value for X" aria-label="X value">
+        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter X value" aria-label="X value">
+        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter % (e.g. 30)" aria-label="Percentage value">
         <button class="btn primary" id="calcBtn">Calculate</button>
-        <button class="btn ghost" id="clearBtn">Clear</button>
       </div>
 
       <div class="presets small">
         Quick presets:
-        <button class="btn ghost" data-preset="305">X = 305</button>
-        <button class="btn ghost" data-preset="230">X = 230</button>
+        <button class="btn ghost" data-preset-x="305" data-preset-p="30">X=305, P=30%</button>
+        <button class="btn ghost" data-preset-x="230" data-preset-p="30">X=230, P=30%</button>
       </div>
 
       <div class="result" id="resultBox" aria-live="polite" hidden>
