@@ -36,15 +36,15 @@ function formatNumber(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
 
-// --- Calculate recommended rate ---
+// --- Calculate recommended rate with ceiling 10 logic ---
 function calculateRecommendedRate(rate) {
-  // Round to nearest 10 where nett rate (rate/2) is divisible by 10
-  let recommendedRate = Math.round(rate / 10) * 10;
+  // Use ceiling 10 and ensure nett rate is divisible by 10
+  let recommendedRate = Math.ceil(rate / 10) * 10;
   let nettRate = recommendedRate / 2;
   
   // If nett rate is not divisible by 10, adjust to next multiple of 20
   if (nettRate % 10 !== 0) {
-    recommendedRate = Math.round(rate / 20) * 20;
+    recommendedRate = Math.ceil(rate / 20) * 20;
   }
   
   return {
