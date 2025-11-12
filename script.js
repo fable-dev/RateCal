@@ -1,6 +1,8 @@
+// Element selectors
 const xInput = document.getElementById('xValue');
 const pInput = document.getElementById('pValue');
 const changeInput = document.getElementById('changeValue');
+const modeSelect = document.getElementById('changeMode');
 const calcBtn = document.getElementById('calcBtn');
 const clearBtn = document.getElementById('clearBtn');
 const resultBox = document.getElementById('resultBox');
@@ -9,21 +11,8 @@ const resultNote = document.getElementById('resultNote');
 const stepsEl = document.getElementById('steps');
 const showStepsBtn = document.getElementById('showStepsBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
-const increaseBtn = document.getElementById('increaseBtn');
-const decreaseBtn = document.getElementById('decreaseBtn');
 
-let changeMode = null; // 'increase' or 'decrease'
-
-// Handle mode toggle
-function toggleMode(mode) {
-  changeMode = mode;
-  increaseBtn.classList.toggle('primary', mode === 'increase');
-  decreaseBtn.classList.toggle('primary', mode === 'decrease');
-}
-
-increaseBtn.addEventListener('click', () => toggleMode('increase'));
-decreaseBtn.addEventListener('click', () => toggleMode('decrease'));
-
+// --- core logic ---
 function compute(x, p, change, mode) {
   let xNum = parseFloat(x);
   const pNum = parseFloat(p);
@@ -31,7 +20,7 @@ function compute(x, p, change, mode) {
 
   if (!isFinite(xNum) || !isFinite(pNum)) return null;
 
-  // Adjust X based on change
+  // Adjust X based on change and mode
   if (mode === 'increase') xNum += changeNum;
   else if (mode === 'decrease') xNum -= changeNum;
 
@@ -47,11 +36,14 @@ function formatNumber(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
 
+// --- calculate ---
 function calculateAction() {
-  const xVal = xInput.value;
-  const pVal = pInput.value || '30';
-  const changeVal = changeInput.value || '0';
-  const r = compute(xVal, pVal, changeVal, changeMode);
+  const xVal = xInput.value.trim();
+  const pVal = pInput.value.trim() || '30';
+  const changeVal = changeInput.value.trim() || '0';
+  const mode = modeSelect.value;
+
+  const r = compute(xVal, pVal, changeVal, mode);
 
   if (!r) {
     alert('Please enter valid numbers for X and percentage.');
@@ -59,9 +51,11 @@ function calculateAction() {
   }
 
   resultValue.textContent = 'Result: ' + formatNumber(r.final);
+
   let note = `Base X = ${xVal}`;
   if (r.change !== 0 && r.mode)
     note += ` → New X = ${formatNumber(r.x)} (${r.mode} by ${r.change})`;
+
   resultNote.textContent = `${note}, P = ${formatNumber(r.p)}%`;
 
   stepsEl.innerHTML = `
@@ -72,16 +66,18 @@ function calculateAction() {
     4) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
     5) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
   `;
+
   resultBox.hidden = false;
   stepsEl.hidden = true;
   showStepsBtn.textContent = 'Show steps';
 }
 
+// --- event listeners ---
 calcBtn.addEventListener('click', calculateAction);
 
 clearBtn.addEventListener('click', () => {
-  [xInput, pInput, changeInput].forEach(i => i.value = '');
-  toggleMode(null);
+  [xInput, pInput, changeInput].forEach(i => (i.value = ''));
+  modeSelect.value = '';
   resultBox.hidden = true;
   stepsEl.hidden = true;
 });
@@ -111,8 +107,8 @@ copyLinkBtn.addEventListener('click', async () => {
   }
 });
 
-[xInput, pInput, changeInput].forEach(i => {
-  i.addEventListener('keypress', e => {
+[xInput, pInput, changeInput, modeSelect].forEach(input => {
+  input.addEventListener('keypress', e => {
     if (e.key === 'Enter') calculateAction();
   });
 });
