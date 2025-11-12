@@ -143,3 +143,11 @@ footer {
     font-size: 18px;
   }
 }
+
+.result strong {
+  color: #2563eb;
+}
+
+.result div {
+  line-height: 1.4;
+}
