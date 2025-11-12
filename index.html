@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RateCal — Simple Formula Calculator</title>
+  <meta name="description" content="Calculate (((X*2)-(0.3*X*2))*2). Made for fable-dev / RateCal." />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #2563eb;
+    }
+    html, body { height:100%; margin:0; background:var(--bg); color:#0f172a; }
+    .wrap {
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      box-sizing:border-box;
+    }
+    .card {
+      width:100%;
+      max-width:520px;
+      background:var(--card);
+      border-radius:14px;
+      padding:20px;
+      box-shadow:0 6px 22px rgba(16,24,40,0.06);
+      box-sizing:border-box;
+    }
+    h1 { margin:0 0 8px 0; font-size:20px; }
+    p.lead { margin:0 0 18px 0; color:var(--muted); font-size:14px; }
+    .controls { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    input[type="number"] {
+      flex:1 1 160px;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6e9ef;
+      font-size:16px;
+      box-sizing:border-box;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    button.btn {
+      padding:10px 14px;
+      border-radius:8px;
+      border:0;
+      cursor:pointer;
+      font-size:15px;
+    }
+    button.primary { background:var(--accent); color:white; }
+    button.ghost { background:transparent; border:1px solid #e6e9ef; color:inherit; }
+    .presets { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .result {
+      margin-top:14px;
+      padding:12px;
+      border-radius:8px;
+      background:#f8fafc;
+      border:1px dashed #e6eefc;
+      font-size:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .small { font-size:13px; color:var(--muted); }
+    .steps { margin-top:12px; font-size:14px; color:var(--muted); background:#ffffff; padding:10px; border-radius:8px; border:1px solid #f1f5f9; }
+    .copy-link { display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:8px; background:#f1f5f9; border:1px solid #e6e9ef; cursor:pointer; }
+    footer { margin-top:16px; font-size:13px; color:var(--muted); text-align:center; }
+    @media (max-width:420px) {
+      h1 { font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card" role="main">
+      <h1>RateCal — Formula Calculator</h1>
+      <p class="lead">Formula: <strong>(((X × 2) − (0.3 × X × 2)) × 2)</strong></p>
+
+      <div class="controls">
+        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter value for X" aria-label="X value">
+        <button class="btn primary" id="calcBtn">Calculate</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
+      </div>
+
+      <div class="presets small">
+        Quick presets:
+        <button class="btn ghost" data-preset="305">X = 305</button>
+        <button class="btn ghost" data-preset="230">X = 230</button>
+      </div>
+
+      <div class="result" id="resultBox" aria-live="polite" hidden>
+        <div>
+          <div style="font-weight:600" id="resultValue">Result: —</div>
+          <div class="small" id="resultNote"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <button class="btn ghost" id="showStepsBtn">Show steps</button>
+          <button class="copy-link" id="copyLinkBtn" title="Copy site link">Copy link</button>
+        </div>
+      </div>
+
+      <div id="steps" class="steps" hidden></div>
+
+      <footer>
+        Live site: <strong>https://fable-dev.github.io/RateCal/</strong>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const xInput = document.getElementById('xValue');
+    const calcBtn = document.getElementById('calcBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resultBox = document.getElementById('resultBox');
+    const resultValue = document.getElementById('resultValue');
+    const resultNote = document.getElementById('resultNote');
+    const stepsEl = document.getElementById('steps');
+    const showStepsBtn = document.getElementById('showStepsBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+
+    function compute(x) {
+      const xNum = Number(x);
+      const part1 = xNum * 2;
+      const part2 = 0.3 * xNum * 2;
+      const diff = part1 - part2;
+      const final = diff * 2;
+      return { x: xNum, part1, part2, diff, final };
+    }
+
+    function formatNumber(n) {
+      return Number.isInteger(n) ? n.toString() : n.toFixed(2);
+    }
+
+    calcBtn.addEventListener('click', () => {
+      const val = xInput.value.trim();
+      if (val === '') {
+        alert('Please enter a value for X.');
+        xInput.focus();
+        return;
+      }
+      const parsed = Number(val);
+      if (!isFinite(parsed)) {
+        alert('Please enter a valid number.');
+        xInput.focus();
+        return;
+      }
+      const r = compute(parsed);
+      resultValue.textContent = 'Result: ' + formatNumber(r.final);
+      resultNote.textContent = `Computed from X = ${formatNumber(r.x)}`;
+      stepsEl.innerHTML = `
+        <strong>Steps:</strong><br>
+        1) X × 2 = ${formatNumber(r.part1)}<br>
+        2) 0.3 × X × 2 = ${formatNumber(r.part2)}<br>
+        3) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
+        4) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
+      `;
+      resultBox.hidden = false;
+      stepsEl.hidden = true;
+      showStepsBtn.textContent = 'Show steps';
+    });
+
+    clearBtn.addEventListener('click', () => {
+      xInput.value = '';
+      resultBox.hidden = true;
+      stepsEl.hidden = true;
+      xInput.focus();
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        xInput.value = btn.getAttribute('data-preset');
+        calcBtn.click();
+      });
+    });
+
+    showStepsBtn.addEventListener('click', () => {
+      const hidden = stepsEl.hidden;
+      stepsEl.hidden = !hidden;
+      showStepsBtn.textContent = hidden ? 'Hide steps' : 'Show steps';
+    });
+
+    copyLinkBtn.addEventListener('click', async () => {
+      const url = 'https://fable-dev.github.io/RateCal/';
+      try {
+        await navigator.clipboard.writeText(url);
+        copyLinkBtn.textContent = 'Copied!';
+        setTimeout(() => copyLinkBtn.textContent = 'Copy link', 1500);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    });
+
+    // Press Enter to calculate
+    xInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') calcBtn.click();
+    });
+  </script>
+</body>
+</html>
