@@ -1,116 +1,118 @@
-// Elements
 const xInput = document.getElementById('xValue');
 const pInput = document.getElementById('pValue');
+const changeInput = document.getElementById('changeValue');
 const calcBtn = document.getElementById('calcBtn');
+const clearBtn = document.getElementById('clearBtn');
 const resultBox = document.getElementById('resultBox');
 const resultValue = document.getElementById('resultValue');
 const resultNote = document.getElementById('resultNote');
 const stepsEl = document.getElementById('steps');
 const showStepsBtn = document.getElementById('showStepsBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
+const increaseBtn = document.getElementById('increaseBtn');
+const decreaseBtn = document.getElementById('decreaseBtn');
 
-// compute function using dynamic percentage:
-// (((X * 2) - ((P/100) * X * 2)) * 2)
-function compute(x, p) {
-  const xNum = parseFloat(x);
+let changeMode = null; // 'increase' or 'decrease'
+
+// Handle mode toggle
+function toggleMode(mode) {
+  changeMode = mode;
+  increaseBtn.classList.toggle('primary', mode === 'increase');
+  decreaseBtn.classList.toggle('primary', mode === 'decrease');
+}
+
+increaseBtn.addEventListener('click', () => toggleMode('increase'));
+decreaseBtn.addEventListener('click', () => toggleMode('decrease'));
+
+function compute(x, p, change, mode) {
+  let xNum = parseFloat(x);
   const pNum = parseFloat(p);
+  const changeNum = parseFloat(change) || 0;
 
-  // guards: if x or p are not numbers, return null to indicate error
   if (!isFinite(xNum) || !isFinite(pNum)) return null;
+
+  // Adjust X based on change
+  if (mode === 'increase') xNum += changeNum;
+  else if (mode === 'decrease') xNum -= changeNum;
 
   const part1 = xNum * 2;
   const part2 = (pNum / 100) * xNum * 2;
   const diff = part1 - part2;
   const final = diff * 2;
-  return { x: xNum, p: pNum, part1, part2, diff, final };
+
+  return { x: xNum, p: pNum, change: changeNum, mode, part1, part2, diff, final };
 }
 
 function formatNumber(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
 
-function showResult(r) {
+function calculateAction() {
+  const xVal = xInput.value;
+  const pVal = pInput.value || '30';
+  const changeVal = changeInput.value || '0';
+  const r = compute(xVal, pVal, changeVal, changeMode);
+
   if (!r) {
-    resultBox.hidden = true;
+    alert('Please enter valid numbers for X and percentage.');
     return;
   }
+
   resultValue.textContent = 'Result: ' + formatNumber(r.final);
-  resultNote.textContent = `From X = ${formatNumber(r.x)}, P = ${formatNumber(r.p)}%`;
+  let note = `Base X = ${xVal}`;
+  if (r.change !== 0 && r.mode)
+    note += ` → New X = ${formatNumber(r.x)} (${r.mode} by ${r.change})`;
+  resultNote.textContent = `${note}, P = ${formatNumber(r.p)}%`;
+
   stepsEl.innerHTML = `
     <strong>Steps:</strong><br>
-    1) X × 2 = ${formatNumber(r.part1)}<br>
-    2) ${formatNumber(r.p)}% of X × 2 = ${formatNumber(r.part2)}<br>
-    3) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
-    4) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
+    1) Adjust X: ${xVal} ${r.mode ? (r.mode === 'increase' ? '+' : '−') + r.change : ''} = ${formatNumber(r.x)}<br>
+    2) X × 2 = ${formatNumber(r.part1)}<br>
+    3) ${formatNumber(r.p)}% of X × 2 = ${formatNumber(r.part2)}<br>
+    4) ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
+    5) ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
   `;
   resultBox.hidden = false;
   stepsEl.hidden = true;
   showStepsBtn.textContent = 'Show steps';
 }
 
-// main calculate action (used by button or by live updates)
-function calculateAction() {
-  const xVal = xInput.value;
-  const pVal = pInput.value;
-
-  // if inputs empty, fallback: if p is empty default to 30
-  const pToUse = (pVal === '' || pVal === null) ? '30' : pVal;
-
-  const r = compute(xVal, pToUse);
-  if (!r) {
-    // If invalid, show a small inline message instead of alert
-    resultBox.hidden = true;
-    // optional friendly inline notice (you can replace with UI element)
-    console.warn('Invalid input for X or P. X:', xVal, 'P:', pToUse);
-    return;
-  }
-  showResult(r);
-}
-
-// button click
 calcBtn.addEventListener('click', calculateAction);
 
-// live update when user changes X or P (optional: this recalculates as you type)
-[xInput, pInput].forEach(el => {
-  el.addEventListener('input', () => {
-    // only run live calc if there is at least something in X
-    if (xInput.value.trim() !== '') {
-      calculateAction();
-    }
-  });
+clearBtn.addEventListener('click', () => {
+  [xInput, pInput, changeInput].forEach(i => i.value = '');
+  toggleMode(null);
+  resultBox.hidden = true;
+  stepsEl.hidden = true;
 });
 
-// presets
 document.querySelectorAll('[data-preset-x]').forEach(btn => {
   btn.addEventListener('click', () => {
     xInput.value = btn.getAttribute('data-preset-x');
-    pInput.value = btn.getAttribute('data-preset-p') || '30';
+    pInput.value = btn.getAttribute('data-preset-p');
     calculateAction();
   });
 });
 
-// show/hide steps
 showStepsBtn.addEventListener('click', () => {
   const hidden = stepsEl.hidden;
   stepsEl.hidden = !hidden;
   showStepsBtn.textContent = hidden ? 'Hide steps' : 'Show steps';
 });
 
-// copy site link
 copyLinkBtn.addEventListener('click', async () => {
   const url = 'https://fable-dev.github.io/RateCal/';
   try {
     await navigator.clipboard.writeText(url);
     copyLinkBtn.textContent = 'Copied!';
-    setTimeout(() => (copyLinkBtn.textContent = 'Copy link'), 1400);
-  } catch (e) {
+    setTimeout(() => (copyLinkBtn.textContent = 'Copy link'), 1500);
+  } catch {
     prompt('Copy this link:', url);
   }
 });
 
-// Enter to calculate
-[xInput, pInput].forEach(input => {
-  input.addEventListener('keypress', e => {
+[xInput, pInput, changeInput].forEach(i => {
+  i.addEventListener('keypress', e => {
     if (e.key === 'Enter') calculateAction();
   });
 });
