@@ -3,53 +3,123 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RateCal — Formula Calculator</title>
-  <meta name="description" content="Calculate (((X*2)-((P% of X)*2))*2) with optional rate change. Made for fable-dev / RateCal." />
+  <title>RateCal — Pricing Calculator</title>
+  <meta name="description" content="Professional pricing calculator for retail and wholesale businesses. Calculate MRP, nett rates, and get smart recommendations." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="wrap">
     <main class="card" role="main">
-      <h1>RateCal — Formula Calculator</h1>
-      <p class="lead">Formula: <strong>(((X × 2) − ((P% of X) × 2)) × 2)</strong></p>
+      <div class="header">
+        <h1>RateCal — Pricing Calculator</h1>
+        <button class="info-btn" id="infoBtn" aria-label="Show formula information">ℹ️</button>
+      </div>
+      
+      <p class="lead">Calculate optimal pricing with smart recommendations</p>
 
-      <div class="controls">
-        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter X value">
-        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter % (e.g. 30)" value="30">
+      <div class="input-group">
+        <label for="xValue">Product Cost (₹)</label>
+        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter product cost in rupees">
+      </div>
+
+      <div class="input-group">
+        <label for="pValue">Margin/Discount Percentage (%)</label>
+        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter percentage" value="30">
+      </div>
+
+      <div class="input-group">
+        <label>Price Adjustment</label>
+        <div class="controls">
+          <select id="changeMode">
+            <option value="">No adjustment</option>
+            <option value="increase">Increase cost by</option>
+            <option value="decrease">Decrease cost by</option>
+          </select>
+          <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Adjustment amount">
+        </div>
       </div>
 
       <div class="controls">
-        <select id="changeMode">
-          <option value="">No change</option>
-          <option value="increase">Increase</option>
-          <option value="decrease">Decrease</option>
-        </select>
-        <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Price change / variation">
+        <button class="btn primary" id="calcBtn">Calculate Pricing</button>
+        <button class="btn ghost" id="clearBtn">Clear All</button>
       </div>
 
-      <div class="controls">
-        <button class="btn primary" id="calcBtn">Calculate</button>
-        <button class="btn ghost" id="clearBtn">Clear</button>
-      </div>
-
-      <div class="presets small">
-        Quick presets:
-        <button class="btn ghost" data-preset-x="305" data-preset-p="30">X=305, P=30%</button>
-        <button class="btn ghost" data-preset-x="230" data-preset-p="30">X=230, P=30%</button>
+      <div class="presets">
+        <div class="preset-label">Quick Presets:</div>
+        <button class="btn ghost" data-preset-x="305" data-preset-p="30">Cost=305, Margin=30%</button>
+        <button class="btn ghost" data-preset-x="230" data-preset-p="30">Cost=230, Margin=30%</button>
       </div>
 
       <div class="result" id="resultBox" aria-live="polite" hidden>
-        <div>
-          <div style="font-weight:600" id="resultValue">Result: —</div>
-          <div class="small" id="resultNote"></div>
+        <div class="result-main">
+          <div class="result-title">Calculated Pricing</div>
+          <div class="result-value" id="resultValue"></div>
+          <div class="result-note" id="resultNote"></div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-          <button class="btn ghost" id="showStepsBtn">Show steps</button>
-          <button class="copy-link" id="copyLinkBtn">Copy link</button>
+        <div class="result-actions">
+          <button class="btn ghost" id="showStepsBtn">Show Calculation</button>
+          <button class="copy-link" id="copyLinkBtn">Share Calculator</button>
         </div>
       </div>
 
       <div id="steps" class="steps" hidden></div>
+
+      <!-- Formula Info Modal -->
+      <div id="formulaModal" class="modal" hidden>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Pricing Formula</h3>
+            <button class="close-btn" id="closeModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="formula-graphic">
+              <div class="formula-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <strong>Adjust Base Cost (if needed):</strong><br>
+                  <code>New Cost = Base Cost ± Adjustment</code>
+                </div>
+              </div>
+              
+              <div class="formula-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <strong>Calculate MRP:</strong><br>
+                  <code>MRP = (New Cost × 2) - (Margin% of New Cost × 2)</code><br>
+                  <code>Then: MRP = Result × 2</code>
+                </div>
+              </div>
+              
+              <div class="formula-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <strong>Calculate Nett Rate:</strong><br>
+                  <code>Nett Rate = MRP ÷ 2</code>
+                </div>
+              </div>
+              
+              <div class="formula-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                  <strong>Smart Recommendation:</strong><br>
+                  <code>Rounds MRP up to nearest 10<br>Ensures Nett Rate is divisible by 10</code>
+                </div>
+              </div>
+            </div>
+            
+            <div class="formula-examples">
+              <h4>Example Calculation:</h4>
+              <p>Cost: ₹300, Margin: 30%, No adjustment</p>
+              <ul>
+                <li>New Cost = ₹300</li>
+                <li>MRP = ((300×2) - (30% of 300×2)) × 2 = ₹840</li>
+                <li>Nett Rate = ₹420</li>
+                <li>Recommended: ₹860 (Nett: ₹430)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <footer>
         Live site: <strong>https://fable-dev.github.io/RateCal/</strong>
