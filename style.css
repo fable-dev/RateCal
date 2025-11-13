@@ -32,7 +32,7 @@ html, body {
 
 .card {
   width: 100%;
-  max-width: 560px;
+  max-width: 1000px;
   background: var(--card);
   border-radius: 16px;
   padding: 32px;
@@ -80,14 +80,34 @@ h1 {
 }
 
 p.lead {
-  margin: 0 0 28px 0;
+  margin: 0 0 32px 0;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
 }
 
+/* Main content layout */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .input-group label {
@@ -101,7 +121,7 @@ p.lead {
 .controls {
   display: flex;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   flex-wrap: wrap;
 }
 
@@ -174,7 +194,7 @@ button.ghost:hover {
 .presets {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -185,16 +205,22 @@ button.ghost:hover {
   font-size: 14px;
 }
 
+/* Result Section Styles */
 .result {
-  margin-top: 24px;
   padding: 24px;
   border-radius: 12px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 200px;
+  justify-content: center;
+}
+
+.result.has-results {
   background: linear-gradient(135deg, #1e3a8a, #1e40af);
   border: 1px solid #3b82f6;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
 }
 
@@ -206,29 +232,41 @@ button.ghost:hover {
   font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.result-placeholder {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.result-placeholder p {
+  margin: 0;
+  font-size: 15px;
+}
+
 .result-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: white;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .result-note {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
-  margin-top: 8px;
+  margin-top: 12px;
+  line-height: 1.4;
 }
 
 .result-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  align-items: flex-end;
+  align-items: stretch;
 }
 
 .small {
@@ -237,7 +275,6 @@ button.ghost:hover {
 }
 
 .steps {
-  margin-top: 20px;
   font-size: 14px;
   color: var(--muted);
   background: rgba(30, 41, 59, 0.8);
@@ -268,6 +305,7 @@ button.ghost:hover {
   font-size: 14px;
   transition: all 0.2s ease;
   text-decoration: none;
+  justify-content: center;
 }
 
 .copy-link:hover {
@@ -301,7 +339,7 @@ button.ghost:hover {
   background: var(--card);
   border-radius: 16px;
   padding: 0;
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -353,6 +391,16 @@ button.ghost:hover {
 
 .modal-body {
   padding: 0 24px 24px 24px;
+}
+
+.formula-section h4 {
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.formula-graphic {
+  margin-bottom: 24px;
 }
 
 .formula-step {
@@ -416,8 +464,13 @@ button.ghost:hover {
   color: var(--muted);
 }
 
+.formula-examples p {
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+}
+
 footer {
-  margin-top: 24px;
+  margin-top: 32px;
   font-size: 13px;
   color: var(--muted);
   text-align: center;
@@ -441,18 +494,24 @@ footer strong {
   }
 }
 
-.result, .steps, .modal-content {
+.result.has-results, .steps, .modal-content {
   animation: fadeInUp 0.3s ease-out;
 }
 
 /* Improved responsive design */
-@media (max-width: 520px) {
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
   .wrap {
     padding: 16px;
   }
   
   .card {
     padding: 24px 20px;
+    max-width: 100%;
   }
   
   h1 {
@@ -470,12 +529,6 @@ footer strong {
   
   input[type="number"], select {
     flex: 1 1 auto;
-  }
-  
-  .result {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
   }
   
   .result-actions {
