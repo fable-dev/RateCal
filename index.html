@@ -17,52 +17,74 @@
       
       <p class="lead">Calculate optimal pricing with smart recommendations</p>
 
-      <div class="input-group">
-        <label for="xValue">Product Cost (₹)</label>
-        <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter product cost in rupees">
-      </div>
+      <div class="main-content">
+        <div class="input-section">
+          <div class="input-group">
+            <label for="formulaType">Formula Type</label>
+            <select id="formulaType">
+              <option value="basic">Basic Formula</option>
+              <option value="compound">Compound Formula</option>
+            </select>
+          </div>
 
-      <div class="input-group">
-        <label for="pValue">Margin/Discount Percentage (%)</label>
-        <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter percentage" value="30">
-      </div>
+          <div class="input-group">
+            <label for="xValue">Product Cost (₹)</label>
+            <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter product cost in rupees">
+          </div>
 
-      <div class="input-group">
-        <label>Price Adjustment</label>
-        <div class="controls">
-          <select id="changeMode">
-            <option value="">No adjustment</option>
-            <option value="increase">Increase cost by</option>
-            <option value="decrease">Decrease cost by</option>
-          </select>
-          <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Adjustment amount">
+          <div class="input-group" id="cValueGroup" style="display: none;">
+            <label for="cValue">Compound Percentage C (%)</label>
+            <input id="cValue" type="number" inputmode="decimal" step="any" placeholder="Enter compound percentage" value="10">
+          </div>
+
+          <div class="input-group">
+            <label for="pValue">Margin/Discount Percentage P (%)</label>
+            <input id="pValue" type="number" inputmode="decimal" step="any" placeholder="Enter percentage" value="30">
+          </div>
+
+          <div class="input-group">
+            <label>Price Adjustment</label>
+            <div class="controls">
+              <select id="changeMode">
+                <option value="">No adjustment</option>
+                <option value="increase">Increase cost by</option>
+                <option value="decrease">Decrease cost by</option>
+              </select>
+              <input id="changeValue" type="number" inputmode="decimal" step="any" placeholder="Adjustment amount">
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn primary" id="calcBtn">Calculate Pricing</button>
+            <button class="btn ghost" id="clearBtn">Clear All</button>
+          </div>
+
+          <div class="presets">
+            <div class="preset-label">Quick Presets:</div>
+            <button class="btn ghost" data-preset-x="305" data-preset-p="30">Cost=305, Margin=30%</button>
+            <button class="btn ghost" data-preset-x="230" data-preset-p="30">Cost=230, Margin=30%</button>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="result" id="resultBox" aria-live="polite">
+            <div class="result-main">
+              <div class="result-title">Calculated Pricing</div>
+              <div class="result-placeholder">
+                <p>Enter values and click "Calculate Pricing" to see results</p>
+              </div>
+              <div class="result-value" id="resultValue" style="display: none;"></div>
+              <div class="result-note" id="resultNote" style="display: none;"></div>
+            </div>
+            <div class="result-actions" id="resultActions" style="display: none;">
+              <button class="btn ghost" id="showStepsBtn">Show Calculation</button>
+              <button class="copy-link" id="copyLinkBtn">Share Calculator</button>
+            </div>
+          </div>
+
+          <div id="steps" class="steps" style="display: none;"></div>
         </div>
       </div>
-
-      <div class="controls">
-        <button class="btn primary" id="calcBtn">Calculate Pricing</button>
-        <button class="btn ghost" id="clearBtn">Clear All</button>
-      </div>
-
-      <div class="presets">
-        <div class="preset-label">Quick Presets:</div>
-        <button class="btn ghost" data-preset-x="305" data-preset-p="30">Cost=305, Margin=30%</button>
-        <button class="btn ghost" data-preset-x="230" data-preset-p="30">Cost=230, Margin=30%</button>
-      </div>
-
-      <div class="result" id="resultBox" aria-live="polite" hidden>
-        <div class="result-main">
-          <div class="result-title">Calculated Pricing</div>
-          <div class="result-value" id="resultValue"></div>
-          <div class="result-note" id="resultNote"></div>
-        </div>
-        <div class="result-actions">
-          <button class="btn ghost" id="showStepsBtn">Show Calculation</button>
-          <button class="copy-link" id="copyLinkBtn">Share Calculator</button>
-        </div>
-      </div>
-
-      <div id="steps" class="steps" hidden></div>
 
       <!-- Formula Info Modal -->
       <div id="formulaModal" class="modal">
@@ -72,49 +94,107 @@
             <button class="close-btn" id="closeModal">&times;</button>
           </div>
           <div class="modal-body">
-            <div class="formula-graphic">
-              <div class="formula-step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                  <strong>Adjust Base Cost (if needed):</strong><br>
-                  <code>New Cost = Base Cost ± Adjustment</code>
+            <div class="formula-section" id="basicFormulaSection">
+              <h4>Basic Formula</h4>
+              <div class="formula-graphic">
+                <div class="formula-step">
+                  <div class="step-number">1</div>
+                  <div class="step-content">
+                    <strong>Adjust Base Cost (if needed):</strong><br>
+                    <code>New Cost = Base Cost ± Adjustment</code>
+                  </div>
+                </div>
+                
+                <div class="formula-step">
+                  <div class="step-number">2</div>
+                  <div class="step-content">
+                    <strong>Calculate MRP:</strong><br>
+                    <code>MRP = (New Cost × 2) - (Margin% of New Cost × 2)</code><br>
+                    <code>Then: MRP = Result × 2</code>
+                  </div>
+                </div>
+                
+                <div class="formula-step">
+                  <div class="step-number">3</div>
+                  <div class="step-content">
+                    <strong>Calculate Nett Rate:</strong><br>
+                    <code>Nett Rate = MRP ÷ 2</code>
+                  </div>
+                </div>
+                
+                <div class="formula-step">
+                  <div class="step-number">4</div>
+                  <div class="step-content">
+                    <strong>Smart Recommendation:</strong><br>
+                    <code>Rounds MRP up to nearest 10<br>Ensures Nett Rate is divisible by 10</code>
+                  </div>
                 </div>
               </div>
-              
-              <div class="formula-step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                  <strong>Calculate MRP:</strong><br>
-                  <code>MRP = (New Cost × 2) - (Margin% of New Cost × 2)</code><br>
-                  <code>Then: MRP = Result × 2</code>
+            </div>
+
+            <div class="formula-section" id="compoundFormulaSection" style="display: none;">
+              <h4>Compound Formula</h4>
+              <div class="formula-graphic">
+                <div class="formula-step">
+                  <div class="step-number">1</div>
+                  <div class="step-content">
+                    <strong>Adjust Base Cost (if needed):</strong><br>
+                    <code>New Cost = Base Cost ± Adjustment</code>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="formula-step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                  <strong>Calculate Nett Rate:</strong><br>
-                  <code>Nett Rate = MRP ÷ 2</code>
+                
+                <div class="formula-step">
+                  <div class="step-number">2</div>
+                  <div class="step-content">
+                    <strong>Apply Compound Percentage C%:</strong><br>
+                    <code>Adjusted Cost = New Cost - (C% of New Cost)</code>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="formula-step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                  <strong>Smart Recommendation:</strong><br>
-                  <code>Rounds MRP up to nearest 10<br>Ensures Nett Rate is divisible by 10</code>
+                
+                <div class="formula-step">
+                  <div class="step-number">3</div>
+                  <div class="step-content">
+                    <strong>Calculate MRP:</strong><br>
+                    <code>MRP = (Adjusted Cost × 2) - (P% of New Cost × 2)</code><br>
+                    <code>Then: MRP = Result × 2</code>
+                  </div>
+                </div>
+                
+                <div class="formula-step">
+                  <div class="step-number">4</div>
+                  <div class="step-content">
+                    <strong>Calculate Nett Rate:</strong><br>
+                    <code>Nett Rate = MRP ÷ 2</code>
+                  </div>
+                </div>
+                
+                <div class="formula-step">
+                  <div class="step-number">5</div>
+                  <div class="step-content">
+                    <strong>Smart Recommendation:</strong><br>
+                    <code>Rounds MRP up to nearest 10<br>Ensures Nett Rate is divisible by 10</code>
+                  </div>
                 </div>
               </div>
             </div>
             
             <div class="formula-examples">
-              <h4>Example Calculation:</h4>
-              <p>Cost: ₹300, Margin: 30%, No adjustment</p>
+              <h4>Example Calculations:</h4>
+              <p><strong>Basic Formula:</strong> Cost: ₹300, Margin: 30%, No adjustment</p>
               <ul>
                 <li>New Cost = ₹300</li>
                 <li>MRP = ((300×2) - (30% of 300×2)) × 2 = ₹840</li>
                 <li>Nett Rate = ₹420</li>
                 <li>Recommended: ₹860 (Nett: ₹430)</li>
+              </ul>
+              
+              <p><strong>Compound Formula:</strong> Cost: ₹300, C: 10%, P: 30%, No adjustment</p>
+              <ul>
+                <li>New Cost = ₹300</li>
+                <li>Adjusted Cost = 300 - (10% of 300) = ₹270</li>
+                <li>MRP = ((270×2) - (30% of 300×2)) × 2 = ₹720</li>
+                <li>Nett Rate = ₹360</li>
+                <li>Recommended: ₹740 (Nett: ₹370)</li>
               </ul>
             </div>
           </div>
