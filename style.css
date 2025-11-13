@@ -1,16 +1,23 @@
 :root {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --bg: #f6f7fb;
-  --card: #ffffff;
-  --muted: #6b7280;
-  --accent: #2563eb;
+  --bg: #0f172a;
+  --card: #1e293b;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --text: #f1f5f9;
+  --border: #334155;
+  --success: #10b981;
+  --input-bg: #334155;
+  --shadow: rgba(0, 0, 0, 0.3);
 }
 
 html, body {
   height: 100%;
   margin: 0;
   background: var(--bg);
-  color: #0f172a;
+  color: var(--text);
+  transition: all 0.3s ease;
 }
 
 .wrap {
@@ -26,38 +33,58 @@ html, body {
   width: 100%;
   max-width: 520px;
   background: var(--card);
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 6px 22px rgba(16, 24, 40, 0.06);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 40px var(--shadow);
   box-sizing: border-box;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
 }
 
 h1 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 p.lead {
-  margin: 0 0 18px 0;
+  margin: 0 0 28px 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .controls {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-input[type="number"] {
+input[type="number"], select {
   flex: 1 1 160px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #e6e9ef;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
   font-size: 16px;
   box-sizing: border-box;
-  -moz-appearance: textfield;
+  transition: all 0.2s ease;
+}
+
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="number"]::placeholder {
+  color: var(--muted);
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -67,42 +94,73 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 button.btn {
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 14px 20px;
+  border-radius: 12px;
   border: 0;
   cursor: pointer;
   font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 button.primary {
   background: var(--accent);
   color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+button.primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 
 button.ghost {
   background: transparent;
-  border: 1px solid #e6e9ef;
-  color: inherit;
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+
+button.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .presets {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.presets .small {
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .result {
-  margin-top: 14px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f8fafc;
-  border: 1px dashed #e6eefc;
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  border: 1px solid #3b82f6;
   font-size: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.result strong {
+  color: white;
+  font-weight: 700;
 }
 
 .small {
@@ -111,43 +169,121 @@ button.ghost {
 }
 
 .steps {
-  margin-top: 12px;
+  margin-top: 20px;
   font-size: 14px;
   color: var(--muted);
-  background: #ffffff;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #f1f5f9;
+  background: rgba(30, 41, 59, 0.8);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  line-height: 1.6;
+  backdrop-filter: blur(10px);
+}
+
+.steps strong {
+  color: var(--accent);
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .copy-link {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #f1f5f9;
-  border: 1px solid #e6e9ef;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
+  color: white;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.copy-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 footer {
-  margin-top: 16px;
+  margin-top: 24px;
   font-size: 13px;
   color: var(--muted);
   text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
-@media (max-width: 420px) {
-  h1 {
-    font-size: 18px;
+footer strong {
+  color: var(--accent);
+}
+
+/* Animation for result appearance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.result strong {
-  color: #2563eb;
+.result, .steps {
+  animation: fadeInUp 0.3s ease-out;
 }
 
-.result div {
-  line-height: 1.4;
+/* Improved responsive design */
+@media (max-width: 520px) {
+  .wrap {
+    padding: 16px;
+  }
+  
+  .card {
+    padding: 24px 20px;
+  }
+  
+  h1 {
+    font-size: 20px;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  input[type="number"], select {
+    flex: 1 1 auto;
+  }
+  
+  .result {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .presets {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
