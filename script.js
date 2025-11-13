@@ -109,14 +109,19 @@ function calculateAction() {
 
 // --- Modal Functions ---
 function showModal() {
-  formulaModal.hidden = false;
+  formulaModal.classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
 function hideModal() {
-  formulaModal.hidden = true;
+  formulaModal.classList.remove('show');
   document.body.style.overflow = 'auto';
 }
+
+// --- Initialize modal as hidden on page load ---
+document.addEventListener('DOMContentLoaded', function() {
+  hideModal(); // Ensure modal is hidden when page loads
+});
 
 // --- event listeners ---
 calcBtn.addEventListener('click', calculateAction);
@@ -166,7 +171,7 @@ formulaModal.addEventListener('click', (e) => {
 
 // Close modal with Escape key
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !formulaModal.hidden) {
+  if (e.key === 'Escape' && formulaModal.classList.contains('show')) {
     hideModal();
   }
 });
