@@ -11,6 +11,9 @@ const resultNote = document.getElementById('resultNote');
 const stepsEl = document.getElementById('steps');
 const showStepsBtn = document.getElementById('showStepsBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
+const infoBtn = document.getElementById('infoBtn');
+const formulaModal = document.getElementById('formulaModal');
+const closeModal = document.getElementById('closeModal');
 
 // --- core logic ---
 function compute(x, p, change, mode) {
@@ -63,39 +66,56 @@ function calculateAction() {
   const r = compute(xVal, pVal, changeVal, mode);
 
   if (!r) {
-    alert('Please enter valid numbers for X and percentage.');
+    alert('Please enter valid numbers for Product Cost and Percentage.');
     return;
   }
 
   const recommended = calculateRecommendedRate(r.final);
   
   resultValue.innerHTML = `
-    <strong>Rate: ${formatNumber(r.final)}</strong><br>
-    <div style="font-size: 14px; margin-top: 4px;">
-      Nett Rate: ${formatNumber(r.final / 2)}<br>
-      <strong>Recommended Rate: ${recommended.rate}</strong><br>
-      <strong>Recommended Nett Rate: ${recommended.nett}</strong>
+    <div style="margin-bottom: 8px;">
+      <span style="opacity: 0.8;">MRP: </span><strong>₹${formatNumber(r.final)}</strong>
+    </div>
+    <div style="margin-bottom: 8px;">
+      <span style="opacity: 0.8;">Nett Rate: </span>₹${formatNumber(r.final / 2)}
+    </div>
+    <div style="margin-bottom: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+      <span style="opacity: 0.8;">Recommended MRP: </span><strong>₹${recommended.rate}</strong>
+    </div>
+    <div>
+      <span style="opacity: 0.8;">Recommended Nett: </span><strong>₹${recommended.nett}</strong>
     </div>
   `;
 
-  let note = `Base X = ${xVal}`;
+  let note = `Base Cost = ₹${xVal}`;
   if (r.change !== 0 && r.mode)
-    note += ` → New X = ${formatNumber(r.x)} (${r.mode} by ${r.change})`;
+    note += ` → New Cost = ₹${formatNumber(r.x)} (${r.mode === 'increase' ? 'increased' : 'decreased'} by ₹${r.change})`;
 
-  resultNote.textContent = `${note}, P = ${formatNumber(r.p)}%`;
+  resultNote.textContent = `${note}, Margin = ${formatNumber(r.p)}%`;
 
   stepsEl.innerHTML = `
-    <strong>Steps:</strong><br>
-    ${r.change !== 0 && r.mode ? `1) Adjust X: ${xVal} ${r.mode === 'increase' ? '+' : '−'} ${r.change} = ${formatNumber(r.x)}<br>` : ''}
-    ${r.change !== 0 && r.mode ? '2' : '1'}) X × 2 = ${formatNumber(r.x)} × 2 = ${formatNumber(r.part1)}<br>
-    ${r.change !== 0 && r.mode ? '3' : '2'}) ${formatNumber(r.p)}% of (X × 2) = ${formatNumber(r.p/100)} × ${formatNumber(r.part1)} = ${formatNumber(r.part2)}<br>
-    ${r.change !== 0 && r.mode ? '4' : '3'}) (X × 2) − (P% of X × 2) = ${formatNumber(r.part1)} − ${formatNumber(r.part2)} = ${formatNumber(r.diff)}<br>
-    ${r.change !== 0 && r.mode ? '5' : '4'}) Difference × 2 = ${formatNumber(r.diff)} × 2 = <strong>${formatNumber(r.final)}</strong>
+    <strong>Calculation Steps:</strong><br>
+    ${r.change !== 0 && r.mode ? `1) Adjust Cost: ₹${xVal} ${r.mode === 'increase' ? '+' : '−'} ₹${r.change} = ₹${formatNumber(r.x)}<br>` : ''}
+    ${r.change !== 0 && r.mode ? '2' : '1'}) Cost × 2 = ₹${formatNumber(r.x)} × 2 = ₹${formatNumber(r.part1)}<br>
+    ${r.change !== 0 && r.mode ? '3' : '2'}) ${formatNumber(r.p)}% of (Cost × 2) = ${formatNumber(r.p/100)} × ₹${formatNumber(r.part1)} = ₹${formatNumber(r.part2)}<br>
+    ${r.change !== 0 && r.mode ? '4' : '3'}) (Cost × 2) − (Margin% of Cost × 2) = ₹${formatNumber(r.part1)} − ₹${formatNumber(r.part2)} = ₹${formatNumber(r.diff)}<br>
+    ${r.change !== 0 && r.mode ? '5' : '4'}) Difference × 2 = ₹${formatNumber(r.diff)} × 2 = <strong>₹${formatNumber(r.final)}</strong>
   `;
 
   resultBox.hidden = false;
   stepsEl.hidden = true;
-  showStepsBtn.textContent = 'Show steps';
+  showStepsBtn.textContent = 'Show Calculation';
+}
+
+// --- Modal Functions ---
+function showModal() {
+  formulaModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function hideModal() {
+  formulaModal.hidden = true;
+  document.body.style.overflow = 'auto';
 }
 
 // --- event listeners ---
@@ -119,7 +139,7 @@ document.querySelectorAll('[data-preset-x]').forEach(btn => {
 showStepsBtn.addEventListener('click', () => {
   const hidden = stepsEl.hidden;
   stepsEl.hidden = !hidden;
-  showStepsBtn.textContent = hidden ? 'Hide steps' : 'Show steps';
+  showStepsBtn.textContent = hidden ? 'Hide Calculation' : 'Show Calculation';
 });
 
 copyLinkBtn.addEventListener('click', async () => {
@@ -127,9 +147,27 @@ copyLinkBtn.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(url);
     copyLinkBtn.textContent = 'Copied!';
-    setTimeout(() => (copyLinkBtn.textContent = 'Copy link'), 1500);
+    setTimeout(() => (copyLinkBtn.textContent = 'Share Calculator'), 1500);
   } catch {
     prompt('Copy this link:', url);
+  }
+});
+
+// Modal event listeners
+infoBtn.addEventListener('click', showModal);
+closeModal.addEventListener('click', hideModal);
+
+// Close modal when clicking outside
+formulaModal.addEventListener('click', (e) => {
+  if (e.target === formulaModal) {
+    hideModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !formulaModal.hidden) {
+    hideModal();
   }
 });
 
