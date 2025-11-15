@@ -20,6 +20,7 @@ const formulaModal = document.getElementById('formulaModal');
 const closeModal = document.getElementById('closeModal');
 const basicFormulaSection = document.getElementById('basicFormulaSection');
 const compoundFormulaSection = document.getElementById('compoundFormulaSection');
+const alternateFormulaSection = document.getElementById('alternateFormulaSection');
 
 // --- core logic ---
 function computeBasic(x, p, change, mode) {
@@ -86,6 +87,42 @@ function computeCompound(x, c, p, change, mode) {
   };
 }
 
+function computeAlternate(x, c, p, change, mode) {
+  let xNum = parseFloat(x);
+  const cNum = parseFloat(c);
+  const pNum = parseFloat(p);
+  const changeNum = parseFloat(change) || 0;
+
+  if (!isFinite(xNum) || !isFinite(cNum) || !isFinite(pNum)) return null;
+
+  // Adjust X based on change and mode
+  if (mode === 'increase') xNum += changeNum;
+  else if (mode === 'decrease') xNum -= changeNum;
+
+  // Calculate base MRP using basic formula
+  const part1 = xNum * 2;  // X × 2
+  const part2 = (pNum / 100) * part1;  // P% of (X × 2)
+  const diff = part1 - part2;  // (X × 2) − (P% of (X × 2))
+  const baseMRP = diff * 2;  // [ (X × 2) − (P% of (X × 2)) ] × 2
+
+  // Apply alternate compound: subtract C% of original cost
+  const final = baseMRP - (cNum / 100) * xNum;
+
+  return { 
+    formula: 'alternate',
+    x: xNum, 
+    c: cNum,
+    p: pNum, 
+    change: changeNum, 
+    mode, 
+    part1, 
+    part2, 
+    diff,
+    baseMRP,
+    final 
+  };
+}
+
 function formatNumber(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
@@ -119,8 +156,10 @@ function calculateAction() {
   let r;
   if (formulaType === 'basic') {
     r = computeBasic(xVal, pVal, changeVal, mode);
-  } else {
+  } else if (formulaType === 'compound') {
     r = computeCompound(xVal, cVal, pVal, changeVal, mode);
+  } else {
+    r = computeAlternate(xVal, cVal, pVal, changeVal, mode);
   }
 
   if (!r) {
@@ -149,7 +188,7 @@ function calculateAction() {
   if (r.change !== 0 && r.mode)
     note += ` → New Cost = ₹${formatNumber(r.x)} (${r.mode === 'increase' ? 'increased' : 'decreased'} by ₹${r.change})`;
 
-  if (r.formula === 'compound') {
+  if (r.formula === 'compound' || r.formula === 'alternate') {
     note += `, C = ${formatNumber(r.c)}%`;
   }
   
@@ -172,7 +211,7 @@ function calculateAction() {
       ${r.change !== 0 && r.mode ? '4' : '3'}) (Cost × 2) − (Margin% of Cost × 2) = ₹${formatNumber(r.part1)} − ₹${formatNumber(r.part2)} = ₹${formatNumber(r.diff)}<br>
       ${r.change !== 0 && r.mode ? '5' : '4'}) Difference × 2 = ₹${formatNumber(r.diff)} × 2 = <strong>₹${formatNumber(r.final)}</strong>
     `;
-  } else {
+  } else if (r.formula === 'compound') {
     stepsEl.innerHTML = `
       <strong>Calculation Steps (Compound Formula):</strong><br>
       ${r.change !== 0 && r.mode ? `1) Adjust Cost: ₹${xVal} ${r.mode === 'increase' ? '+' : '−'} ₹${r.change} = ₹${formatNumber(r.x)}<br>` : ''}
@@ -181,6 +220,16 @@ function calculateAction() {
       ${r.change !== 0 && r.mode ? '4' : '3'}) ${formatNumber(r.p)}% of (Original Cost × 2) = ${formatNumber(r.p/100)} × ₹${formatNumber(r.x * 2)} = ₹${formatNumber(r.part2)}<br>
       ${r.change !== 0 && r.mode ? '5' : '4'}) (Adjusted Cost × 2) − (Margin% of Original Cost × 2) = ₹${formatNumber(r.part1)} − ₹${formatNumber(r.part2)} = ₹${formatNumber(r.diff)}<br>
       ${r.change !== 0 && r.mode ? '6' : '5'}) Difference × 2 = ₹${formatNumber(r.diff)} × 2 = <strong>₹${formatNumber(r.final)}</strong>
+    `;
+  } else {
+    stepsEl.innerHTML = `
+      <strong>Calculation Steps (Alternate Compound Formula):</strong><br>
+      ${r.change !== 0 && r.mode ? `1) Adjust Cost: ₹${xVal} ${r.mode === 'increase' ? '+' : '−'} ₹${r.change} = ₹${formatNumber(r.x)}<br>` : ''}
+      ${r.change !== 0 && r.mode ? '2' : '1'}) Cost × 2 = ₹${formatNumber(r.x)} × 2 = ₹${formatNumber(r.part1)}<br>
+      ${r.change !== 0 && r.mode ? '3' : '2'}) ${formatNumber(r.p)}% of (Cost × 2) = ${formatNumber(r.p/100)} × ₹${formatNumber(r.part1)} = ₹${formatNumber(r.part2)}<br>
+      ${r.change !== 0 && r.mode ? '4' : '3'}) (Cost × 2) − (Margin% of Cost × 2) = ₹${formatNumber(r.part1)} − ₹${formatNumber(r.part2)} = ₹${formatNumber(r.diff)}<br>
+      ${r.change !== 0 && r.mode ? '5' : '4'}) Base MRP = Difference × 2 = ₹${formatNumber(r.diff)} × 2 = ₹${formatNumber(r.baseMRP)}<br>
+      ${r.change !== 0 && r.mode ? '6' : '5'}) Apply C%: Base MRP − ${formatNumber(r.c)}% of Cost = ₹${formatNumber(r.baseMRP)} − ₹${formatNumber((r.c/100) * r.x)} = <strong>₹${formatNumber(r.final)}</strong>
     `;
   }
 
@@ -192,7 +241,7 @@ function calculateAction() {
 function handleFormulaTypeChange() {
   const formulaType = formulaTypeSelect.value;
   
-  if (formulaType === 'compound') {
+  if (formulaType === 'compound' || formulaType === 'alternate') {
     cValueGroup.style.display = 'block';
   } else {
     cValueGroup.style.display = 'none';
@@ -220,13 +269,9 @@ function showModal() {
   
   // Update modal content based on current formula type
   const formulaType = formulaTypeSelect.value;
-  if (formulaType === 'basic') {
-    basicFormulaSection.style.display = 'block';
-    compoundFormulaSection.style.display = 'none';
-  } else {
-    basicFormulaSection.style.display = 'none';
-    compoundFormulaSection.style.display = 'block';
-  }
+  basicFormulaSection.style.display = formulaType === 'basic' ? 'block' : 'none';
+  compoundFormulaSection.style.display = formulaType === 'compound' ? 'block' : 'none';
+  alternateFormulaSection.style.display = formulaType === 'alternate' ? 'block' : 'none';
 }
 
 function hideModal() {
