@@ -21,6 +21,7 @@
                      <label for="formulaType">Formula Type</label>
                      <select id="formulaType">
                         <option value="basic">Basic Formula</option>
+                        <option value="inverse">Inverse Basic Formula</option>
                         <option value="compound">Compound Formula</option>
                         <option value="alternate">Alternate Compound Formula</option>
                      </select>
@@ -28,6 +29,10 @@
                   <div class="input-group">
                      <label for="xValue">Product Cost (₹)</label>
                      <input id="xValue" type="number" inputmode="decimal" step="any" placeholder="Enter product cost in rupees">
+                  </div>
+                  <div class="input-group" id="yValueGroup" style="display: none;">
+                     <label for="yValue">Target MRP (₹)</label>
+                     <input id="yValue" type="number" inputmode="decimal" step="any" placeholder="Enter target MRP in rupees">
                   </div>
                   <div class="input-group" id="cValueGroup" style="display: none;">
                      <label for="cValue">Compound Percentage C (%)</label>
@@ -118,6 +123,52 @@
                            </div>
                         </div>
                      </div>
+                     <div class="formula-section" id="inverseFormulaSection" style="display: none;">
+  <h4>Inverse Basic Formula</h4>
+  <div class="formula-graphic">
+    <div class="formula-step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <strong>Given Target MRP (Y) and Percentage (P):</strong><br>
+        <code>Find X such that: ((X×2) − (P% of X×2)) × 2 = Y</code>
+      </div>
+    </div>
+    
+    <div class="formula-step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <strong>Rearrange Formula:</strong><br>
+        <code>Y = ((X×2) − (P/100 × X×2)) × 2</code><br>
+        <code>Y = (X×2 × (1 − P/100)) × 2</code><br>
+        <code>Y = X × 4 × (1 − P/100)</code>
+      </div>
+    </div>
+    
+    <div class="formula-step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <strong>Solve for X:</strong><br>
+        <code>X = Y ÷ [4 × (1 − P/100)]</code>
+      </div>
+    </div>
+    
+    <div class="formula-step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <strong>Floor to Whole Number:</strong><br>
+        <code>X_floor = floor(X)</code>
+      </div>
+    </div>
+    
+    <div class="formula-step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <strong>Verify with Floored X:</strong><br>
+        <code>Calculate actual MRP using basic formula with X_floor</code>
+      </div>
+    </div>
+  </div>
+</div>
                      <div class="formula-section" id="compoundFormulaSection" style="display: none;">
                         <h4>Compound Formula</h4>
                         <div class="formula-graphic">
@@ -209,6 +260,19 @@
                            <li>Nett Rate = ₹420</li>
                            <li>Recommended: ₹860 (Nett: ₹430)</li>
                         </ul>
+                        <p><strong>Inverse Basic Formula:</strong> Target MRP: ₹840, Margin: 30%</p>
+<ul>
+  <li>X = 840 ÷ [4 × (1 − 30/100)] = 840 ÷ [4 × 0.7] = 840 ÷ 2.8 = 300</li>
+  <li>X_floor = 300 (already whole number)</li>
+  <li>Actual MRP with X=300: ₹840 (matches target)</li>
+</ul>
+
+<p><strong>Inverse Basic Formula with flooring:</strong> Target MRP: ₹850, Margin: 30%</p>
+<ul>
+  <li>X = 850 ÷ [4 × (1 − 30/100)] = 850 ÷ [4 × 0.7] = 850 ÷ 2.8 ≈ 303.57</li>
+  <li>X_floor = 303</li>
+  <li>Actual MRP with X=303: ((303×2) − (30% of 303×2)) × 2 = ₹848.4</li>
+</ul>
                         <p><strong>Compound Formula:</strong> Cost: ₹300, C: 10%, P: 30%, No adjustment</p>
                         <ul>
                            <li>New Cost = ₹300</li>
