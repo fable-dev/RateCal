@@ -58,25 +58,40 @@ function computeBasic(x, p, change, mode) {
 }
 
 function computeInverse(y, p, change, mode) {
+  console.log('computeInverse called with:', { y, p, change, mode });
+  
   const yNum = parseFloat(y);
   const pNum = parseFloat(p);
   const changeNum = parseFloat(change) || 0;
 
-  if (!isFinite(yNum) || !isFinite(pNum)) return null;
+  console.log('Parsed values:', { yNum, pNum, changeNum });
+
+  if (!isFinite(yNum) || !isFinite(pNum)) {
+    console.log('Invalid values - returning null');
+    return null;
+  }
 
   // Solve for X: Y = X × 4 × (1 − P/100)
   // So: X = Y / [4 × (1 − P/100)]
   const denominator = 4 * (1 - pNum / 100);
-  if (denominator === 0) return null; // Avoid division by zero
+  console.log('Denominator:', denominator);
+  
+  if (denominator === 0) {
+    console.log('Division by zero - returning null');
+    return null;
+  }
   
   const xExact = yNum / denominator;
+  console.log('Exact X:', xExact);
   
   // Floor to whole number
   const xFloored = Math.floor(xExact);
+  console.log('Floored X:', xFloored);
   
   // Calculate actual MRP using basic formula with floored X
   // For inverse formula, we don't apply adjustments when verifying
   const actualResult = computeBasic(xFloored.toString(), pNum.toString(), '0', '');
+  console.log('Actual result:', actualResult);
   
   return {
     formula: 'inverse',
