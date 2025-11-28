@@ -75,7 +75,8 @@ function computeInverse(y, p, change, mode) {
   const xFloored = Math.floor(xExact);
   
   // Calculate actual MRP using basic formula with floored X
-  const actualResult = computeBasic(xFloored.toString(), pNum.toString(), changeNum.toString(), mode);
+  // For inverse formula, we don't apply adjustments when verifying
+  const actualResult = computeBasic(xFloored.toString(), pNum.toString(), '0', '');
   
   return {
     formula: 'inverse',
@@ -331,17 +332,18 @@ function handleFormulaTypeChange() {
     cValueGroup.style.display = 'none';
   }
   
-  // Show/hide X vs Y input
+  // Show/hide X vs Y input and adjustment fields
+  const adjustmentGroup = document.querySelector('.input-group:nth-child(5)');
   if (formulaType === 'inverse') {
     xValueGroup.style.display = 'none';
     yValueGroup.style.display = 'block';
     // Hide adjustment fields for inverse formula
-    document.querySelector('.input-group:nth-child(5)').style.display = 'none';
+    adjustmentGroup.style.display = 'none';
   } else {
     xValueGroup.style.display = 'block';
     yValueGroup.style.display = 'none';
     // Show adjustment fields for other formulas
-    document.querySelector('.input-group:nth-child(5)').style.display = 'block';
+    adjustmentGroup.style.display = 'block';
   }
 }
 
