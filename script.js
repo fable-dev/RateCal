@@ -22,6 +22,11 @@ const basicFormulaSection = document.getElementById('basicFormulaSection');
 const compoundFormulaSection = document.getElementById('compoundFormulaSection');
 const alternateFormulaSection = document.getElementById('alternateFormulaSection');
 
+const xValueGroup = document.getElementById('xValueGroup');
+const yValueGroup = document.getElementById('yValueGroup');
+const yInput = document.getElementById('yValue');
+const inverseFormulaSection = document.getElementById('inverseFormulaSection');
+
 // --- core logic ---
 function computeBasic(x, p, change, mode) {
   let xNum = parseFloat(x);
@@ -49,6 +54,39 @@ function computeBasic(x, p, change, mode) {
     part2, 
     diff, 
     final 
+  };
+}
+
+function computeInverse(y, p, change, mode) {
+  const yNum = parseFloat(y);
+  const pNum = parseFloat(p);
+  const changeNum = parseFloat(change) || 0;
+
+  if (!isFinite(yNum) || !isFinite(pNum)) return null;
+
+  // Solve for X: Y = X × 4 × (1 − P/100)
+  // So: X = Y / [4 × (1 − P/100)]
+  const denominator = 4 * (1 - pNum / 100);
+  if (denominator === 0) return null; // Avoid division by zero
+  
+  const xExact = yNum / denominator;
+  
+  // Floor to whole number
+  const xFloored = Math.floor(xExact);
+  
+  // Calculate actual MRP using basic formula with floored X
+  const actualResult = computeBasic(xFloored.toString(), pNum.toString(), changeNum.toString(), mode);
+  
+  return {
+    formula: 'inverse',
+    y: yNum,
+    p: pNum,
+    change: changeNum,
+    mode,
+    xExact,
+    xFloored,
+    actualMRP: actualResult ? actualResult.final : null,
+    denominator
   };
 }
 
@@ -148,6 +186,7 @@ function calculateRecommendedRate(rate) {
 function calculateAction() {
   const formulaType = formulaTypeSelect.value;
   const xVal = xInput.value.trim();
+  const yVal = yInput.value.trim();
   const cVal = cInput.value.trim() || '10';
   const pVal = pInput.value.trim() || '30';
   const changeVal = changeInput.value.trim() || '0';
@@ -156,6 +195,8 @@ function calculateAction() {
   let r;
   if (formulaType === 'basic') {
     r = computeBasic(xVal, pVal, changeVal, mode);
+  } else if (formulaType === 'inverse') {
+    r = computeInverse(yVal, pVal, changeVal, mode);
   } else if (formulaType === 'compound') {
     r = computeCompound(xVal, cVal, pVal, changeVal, mode);
   } else {
@@ -167,32 +208,64 @@ function calculateAction() {
     return;
   }
 
-  const recommended = calculateRecommendedRate(r.final);
+  const recommended = r.formula === 'inverse' 
+    ? calculateRecommendedRate(r.actualMRP) 
+    : calculateRecommendedRate(r.final);
   
-  resultValue.innerHTML = `
-    <div style="margin-bottom: 12px;">
-      <span style="opacity: 0.8;">MRP: </span><strong>₹${formatNumber(r.final)}</strong>
-    </div>
-    <div style="margin-bottom: 12px;">
-      <span style="opacity: 0.8;">Nett Rate: </span>₹${formatNumber(r.final / 2)}
-    </div>
-    <div style="margin-bottom: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
-      <span style="opacity: 0.8;">Recommended MRP: </span><strong>₹${recommended.rate}</strong>
-    </div>
-    <div>
-      <span style="opacity: 0.8;">Recommended Nett: </span><strong>₹${recommended.nett}</strong>
-    </div>
-  `;
+  // Generate result display based on formula type
+  if (r.formula === 'inverse') {
+    resultValue.innerHTML = `
+      <div style="margin-bottom: 12px;">
+        <span style="opacity: 0.8;">Calculated Cost: </span><strong>₹${formatNumber(r.xFloored)}</strong>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span style="opacity: 0.8;">Exact Cost: </span>₹${formatNumber(r.xExact)}
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span style="opacity: 0.8;">Actual MRP: </span>₹${formatNumber(r.actualMRP)}
+      </div>
+      <div style="margin-bottom: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+        <span style="opacity: 0.8;">Recommended MRP: </span><strong>₹${recommended.rate}</strong>
+      </div>
+      <div>
+        <span style="opacity: 0.8;">Recommended Nett: </span><strong>₹${recommended.nett}</strong>
+      </div>
+    `;
+  } else {
+    resultValue.innerHTML = `
+      <div style="margin-bottom: 12px;">
+        <span style="opacity: 0.8;">MRP: </span><strong>₹${formatNumber(r.final)}</strong>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span style="opacity: 0.8;">Nett Rate: </span>₹${formatNumber(r.final / 2)}
+      </div>
+      <div style="margin-bottom: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+        <span style="opacity: 0.8;">Recommended MRP: </span><strong>₹${recommended.rate}</strong>
+      </div>
+      <div>
+        <span style="opacity: 0.8;">Recommended Nett: </span><strong>₹${recommended.nett}</strong>
+      </div>
+    `;
+  }
 
-  let note = `Base Cost = ₹${xVal}`;
-  if (r.change !== 0 && r.mode)
-    note += ` → New Cost = ₹${formatNumber(r.x)} (${r.mode === 'increase' ? 'increased' : 'decreased'} by ₹${r.change})`;
-
-  if (r.formula === 'compound' || r.formula === 'alternate') {
-    note += `, C = ${formatNumber(r.c)}%`;
+  let note = '';
+  if (r.formula === 'inverse') {
+    note = `Target MRP = ₹${yVal}, P = ${formatNumber(r.p)}%`;
+    if (r.change !== 0 && r.mode) {
+      note += `, Adjustment: ${r.mode} by ₹${r.change}`;
+    }
+  } else {
+    note = `Base Cost = ₹${xVal}`;
+    if (r.change !== 0 && r.mode) {
+      note += ` → New Cost = ₹${formatNumber(r.x)} (${r.mode === 'increase' ? 'increased' : 'decreased'} by ₹${r.change})`;
+    }
+    if (r.formula === 'compound' || r.formula === 'alternate') {
+      note += `, C = ${formatNumber(r.c)}%`;
+    }
+    note += `, P = ${formatNumber(r.p)}%`;
   }
   
-  resultNote.textContent = `${note}, P = ${formatNumber(r.p)}%`;
+  resultNote.textContent = note;
 
   // Show result elements and update styling
   document.querySelector('.result-placeholder').style.display = 'none';
@@ -210,6 +283,16 @@ function calculateAction() {
       ${r.change !== 0 && r.mode ? '3' : '2'}) ${formatNumber(r.p)}% of (Cost × 2) = ${formatNumber(r.p/100)} × ₹${formatNumber(r.part1)} = ₹${formatNumber(r.part2)}<br>
       ${r.change !== 0 && r.mode ? '4' : '3'}) (Cost × 2) − (Margin% of Cost × 2) = ₹${formatNumber(r.part1)} − ₹${formatNumber(r.part2)} = ₹${formatNumber(r.diff)}<br>
       ${r.change !== 0 && r.mode ? '5' : '4'}) Difference × 2 = ₹${formatNumber(r.diff)} × 2 = <strong>₹${formatNumber(r.final)}</strong>
+    `;
+  } else if (r.formula === 'inverse') {
+    stepsEl.innerHTML = `
+      <strong>Calculation Steps (Inverse Basic Formula):</strong><br>
+      1) Given: Target MRP = ₹${yVal}, P = ${formatNumber(r.p)}%<br>
+      2) Formula: X = Y ÷ [4 × (1 − P/100)]<br>
+      3) Calculate: X = ${yVal} ÷ [4 × (1 − ${formatNumber(r.p/100)})] = ${yVal} ÷ ${formatNumber(r.denominator)}<br>
+      4) Exact X = ₹${formatNumber(r.xExact)}<br>
+      5) Floored X = ₹${formatNumber(r.xFloored)}<br>
+      6) Actual MRP with X=${formatNumber(r.xFloored)}: <strong>₹${formatNumber(r.actualMRP)}</strong>
     `;
   } else if (r.formula === 'compound') {
     stepsEl.innerHTML = `
@@ -241,16 +324,30 @@ function calculateAction() {
 function handleFormulaTypeChange() {
   const formulaType = formulaTypeSelect.value;
   
+  // Show/hide C% field
   if (formulaType === 'compound' || formulaType === 'alternate') {
     cValueGroup.style.display = 'block';
   } else {
     cValueGroup.style.display = 'none';
   }
+  
+  // Show/hide X vs Y input
+  if (formulaType === 'inverse') {
+    xValueGroup.style.display = 'none';
+    yValueGroup.style.display = 'block';
+    // Hide adjustment fields for inverse formula
+    document.querySelector('.input-group:nth-child(5)').style.display = 'none';
+  } else {
+    xValueGroup.style.display = 'block';
+    yValueGroup.style.display = 'none';
+    // Show adjustment fields for other formulas
+    document.querySelector('.input-group:nth-child(5)').style.display = 'block';
+  }
 }
 
 // --- Clear Function ---
 function clearAll() {
-  [xInput, pInput, changeInput].forEach(i => (i.value = ''));
+  [xInput, yInput, pInput, changeInput].forEach(i => (i.value = ''));
   modeSelect.value = '';
   
   // Reset result display
@@ -270,6 +367,7 @@ function showModal() {
   // Update modal content based on current formula type
   const formulaType = formulaTypeSelect.value;
   basicFormulaSection.style.display = formulaType === 'basic' ? 'block' : 'none';
+  inverseFormulaSection.style.display = formulaType === 'inverse' ? 'block' : 'none';
   compoundFormulaSection.style.display = formulaType === 'compound' ? 'block' : 'none';
   alternateFormulaSection.style.display = formulaType === 'alternate' ? 'block' : 'none';
 }
@@ -334,7 +432,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-[xInput, pInput, cInput, changeInput, modeSelect].forEach(input => {
+[xInput, yInput, pInput, cInput, changeInput, modeSelect].forEach(input => {
   input.addEventListener('keypress', e => {
     if (e.key === 'Enter') calculateAction();
   });
